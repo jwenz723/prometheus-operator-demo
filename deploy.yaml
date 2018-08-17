@@ -4,12 +4,6 @@ kind: ServiceAccount
 metadata:
   name: prometheus
 ---
-# Create the prometheus-operator Service Account
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: prometheus-operator
----
 # Create a role that will grant the needed access for the prometheus application
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
@@ -30,61 +24,6 @@ rules:
 - nonResourceURLs: ["/metrics"]
   verbs: ["get"]
 ---
-# Create a role that will grant the needed access for the prometheus-operator application
-apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: ClusterRole
-metadata:
-  name: prometheus-operator
-rules:
-- apiGroups:
-  - extensions
-  resources:
-  - thirdpartyresources
-  verbs:
-  - "*"
-- apiGroups:
-  - apiextensions.k8s.io
-  resources:
-  - customresourcedefinitions
-  verbs:
-  - "*"
-- apiGroups:
-  - monitoring.coreos.com
-  resources:
-  - alertmanagers
-  - prometheuses
-  - prometheuses/finalizers
-  - servicemonitors
-  verbs:
-  - "*"
-- apiGroups:
-  - apps
-  resources:
-  - statefulsets
-  verbs: ["*"]
-- apiGroups: [""]
-  resources:
-  - configmaps
-  - secrets
-  verbs: ["*"]
-- apiGroups: [""]
-  resources:
-  - pods
-  verbs: ["list", "delete"]
-- apiGroups: [""]
-  resources:
-  - services
-  - endpoints
-  verbs: ["get", "create", "update"]
-- apiGroups: [""]
-  resources:
-  - nodes
-  verbs: ["list", "watch"]
-- apiGroups: [""]
-  resources:
-  - namespaces
-  verbs: ["list"]
----
 # Bind the prometheus ClusterRole to the prometheus ServiceAccount
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
@@ -98,55 +37,6 @@ subjects:
 - kind: ServiceAccount
   name: prometheus
   namespace: default
----
-# Bind the prometheus-operator ClusterRole to the prometheus-operator ServiceAccount
-apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: ClusterRoleBinding
-metadata:
-  name: prometheus-operator
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: prometheus-operator
-subjects:
-- kind: ServiceAccount
-  name: prometheus-operator
-  namespace: default
----
-# Deploy the prometheus-operator application
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  labels:
-    k8s-app: prometheus-operator
-  name: prometheus-operator
-spec:
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        k8s-app: prometheus-operator
-    spec:
-      containers:
-      - args:
-        - --kubelet-service=kube-system/kubelet
-        - --config-reloader-image=quay.io/coreos/configmap-reload:v0.0.1
-        image: quay.io/coreos/prometheus-operator:v0.17.0
-        name: prometheus-operator
-        ports:
-        - containerPort: 8080
-          name: http
-        resources:
-          limits:
-            cpu: 200m
-            memory: 100Mi
-          requests:
-            cpu: 100m
-            memory: 50Mi
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 65534
-      serviceAccountName: prometheus-operator
 ---
 # Deploy the example-app application
 apiVersion: extensions/v1beta1
@@ -167,7 +57,7 @@ spec:
         - name: web
           containerPort: 8080
 ---
-# This indicates to the prometheus operator that example-app should be monitored
+# This indicates to the prometheus operator that example-app should be monitored. Note that the "ServiceMonitor" kind is created by prometheus-operator
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -181,7 +71,7 @@ spec:
   endpoints:
   - port: web
 ---
-# This deploys the actual prometheus application
+# This deploys the actual prometheus application. Note that the "Prometheus" kind is created by prometheus-operator
 apiVersion: monitoring.coreos.com/v1
 kind: Prometheus
 metadata:
