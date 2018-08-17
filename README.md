@@ -16,23 +16,6 @@ kubectl apply -f pre-deploy.yaml
 kubectl apply -f deploy.yaml
 ```
 
-Notice that on your first deployment you will see some error messages on the last lines because the CustomResourceDefinitions necessary to deploy a "ServiceMonitor" and "Prometheus" don't
-exist until the "prometheus-operator" deployment has completed.
-
-	>λ kubectl apply -f deploy.yaml
-	serviceaccount "prometheus" unchanged
-	serviceaccount "prometheus-operator" unchanged
-	clusterrole.rbac.authorization.k8s.io "prometheus" configured
-	clusterrole.rbac.authorization.k8s.io "prometheus-operator" configured
-	clusterrolebinding.rbac.authorization.k8s.io "prometheus" configured
-	clusterrolebinding.rbac.authorization.k8s.io "prometheus-operator" configured
-	deployment.extensions "prometheus-operator" unchanged
-	deployment.extensions "example-app" unchanged
-	service "example-app" unchanged
-	service "prometheus" unchanged
-	unable to recognize "deploy.yaml": no matches for kind "ServiceMonitor" in version "monitoring.coreos.com/v1"
-	unable to recognize "deploy.yaml": no matches for kind "Prometheus" in version "monitoring.coreos.com/v1"
-
 ## Undeploy
 
 `kubectl delete -f deploy.yaml`
