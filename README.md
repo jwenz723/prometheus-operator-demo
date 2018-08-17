@@ -20,7 +20,7 @@ kubectl apply -f deploy.yaml
 
 ```
 kubectl delete -f deploy.yaml
-kubectl delete crd alertmanagers.monitoring.coreos.com
-kubectl delete crd prometheuses.monitoring.coreos.com
-kubectl delete crd servicemonitors.monitoring.coreos.com
+kubectl delete -f pre-deploy.yaml
+kubectl delete --ignore-not-found service prometheus-operated alertmanager-operated
+kubectl delete --ignore-not-found customresourcedefinitions prometheuses.monitoring.coreos.com servicemonitors.monitoring.coreos.com alertmanagers.monitoring.coreos.com
 ```
