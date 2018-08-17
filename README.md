@@ -18,4 +18,9 @@ kubectl apply -f deploy.yaml
 
 ## Undeploy
 
-`kubectl delete -f deploy.yaml`
+```
+kubectl delete -f deploy.yaml
+kubectl delete crd alertmanagers.monitoring.coreos.com
+kubectl delete crd prometheuses.monitoring.coreos.com
+kubectl delete crd servicemonitors.monitoring.coreos.com
+```
